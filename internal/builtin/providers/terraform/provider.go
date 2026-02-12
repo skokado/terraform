@@ -76,7 +76,9 @@ func (p *Provider) GetProviderSchema() providers.GetProviderSchemaResponse {
 			},
 		},
 		StateStores: map[string]providers.Schema{},
-		Actions:     map[string]providers.ActionSchema{},
+		Actions: map[string]providers.ActionSchema{
+			"terraform_data": terraformDataActionSchema(),
+		},
 	}
 	providers.SchemaCache.Set(tfaddr.NewProvider(tfaddr.BuiltInProviderHost, tfaddr.BuiltInProviderNamespace, "terraform"), resp)
 	return resp
@@ -334,6 +336,8 @@ func (p *Provider) PlanAction(req providers.PlanActionRequest) providers.PlanAct
 	var resp providers.PlanActionResponse
 
 	switch req.ActionType {
+	case "terraform_data":
+		return planTerraformDataAction(req)
 	default:
 		resp.Diagnostics = resp.Diagnostics.Append(fmt.Errorf("unsupported action %q", req.ActionType))
 	}
@@ -345,6 +349,8 @@ func (p *Provider) InvokeAction(req providers.InvokeActionRequest) providers.Inv
 	var resp providers.InvokeActionResponse
 
 	switch req.ActionType {
+	case "terraform_data":
+		return invokeTerraformDataAction(req)
 	default:
 		resp.Diagnostics = resp.Diagnostics.Append(fmt.Errorf("unsupported action %q", req.ActionType))
 	}
@@ -356,6 +362,8 @@ func (p *Provider) ValidateActionConfig(req providers.ValidateActionConfigReques
 	var resp providers.ValidateActionConfigResponse
 
 	switch req.TypeName {
+	case "terraform_data":
+		return validateTerraformDataActionConfig(req)
 	default:
 		resp.Diagnostics = resp.Diagnostics.Append(fmt.Errorf("unsupported action %q", req.TypeName))
 	}
